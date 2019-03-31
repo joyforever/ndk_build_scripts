@@ -1,0 +1,115 @@
+diff -uNr libuv-1.27.0/src/unix/fs.c libuv-1.27.0-patch/src/unix/fs.c
+--- libuv-1.27.0/src/unix/fs.c	2019-03-17 02:31:48.000000000 +0800
++++ libuv-1.27.0-patch/src/unix/fs.c	2019-03-31 01:33:47.997696100 +0800
+@@ -75,6 +75,12 @@
+ extern char *mkdtemp(char *template); /* See issue #740 on AIX < 7 */
+ #endif
+ 
++#if defined(ANDROID) || defined(__ANDROID__)
++# include <utime.h>
++#include <sys/sendfile.h>
++ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count);
++#endif
++
+ #define INIT(subtype)                                                         \
+   do {                                                                        \
+     if (req == NULL)                                                          \
+@@ -177,7 +183,12 @@
+ 
+ 
+ static ssize_t uv__fs_futime(uv_fs_t* req) {
+-#if defined(__linux__)                                                        \
++#if defined(ANDROID) || defined(__ANDROID__)
++  struct utimbuf ts;
++  ts.actime = req->atime;
++  ts.modtime = req->mtime;
++  return utime(req->path, &ts);
++#elif defined(__linux__)                                                        \
+     || defined(_AIX71)
+   /* utimesat() has nanosecond resolution but we stick to microseconds
+    * for the sake of consistency with other platforms.
+diff -uNr libuv-1.27.0/src/unix/linux-core.c libuv-1.27.0-patch/src/unix/linux-core.c
+--- libuv-1.27.0/src/unix/linux-core.c	2019-03-17 02:31:48.000000000 +0800
++++ libuv-1.27.0-patch/src/unix/linux-core.c	2019-03-31 01:29:35.240646100 +0800
+@@ -36,12 +36,42 @@
+ #include <net/if.h>
+ #include <sys/epoll.h>
+ #include <sys/param.h>
++#include <sys/types.h>
++#include <sys/syscall.h>
+ #include <sys/prctl.h>
+ #include <sys/sysinfo.h>
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <time.h>
+ 
++// Source from libevent-2.1.8-stable
++int epoll_create(int size) {
++#if !defined(__NR_epoll_create) && defined(__NR_epoll_create1)
++	if (size <= 0) {
++		errno = EINVAL;
++		return -1;
++	}
++	return (syscall(__NR_epoll_create1, 0));
++#else
++	return (syscall(__NR_epoll_create, size));
++#endif
++}
++
++int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
++{
++	return (syscall(__NR_epoll_ctl, epfd, op, fd, event));
++}
++
++int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
++{
++#if !defined(__NR_epoll_wait) && defined(__NR_epoll_pwait)
++	return (syscall(__NR_epoll_pwait, epfd, events, maxevents, timeout, NULL, 0));
++#else
++	return (syscall(__NR_epoll_wait, epfd, events, maxevents, timeout));
++#endif
++}
++// Source from libevent-2.1.8-stable
++
+ #define HAVE_IFADDRS_H 1
+ 
+ #ifdef __UCLIBC__
+@@ -85,6 +115,11 @@
+ int uv__platform_loop_init(uv_loop_t* loop) {
+   int fd;
+ 
++#if defined(ANDROID) || defined(__ANDROID__)
++  fd = epoll_create(256);
++  if (fd != -1)
++    uv__cloexec(fd, 1);
++#else
+   fd = epoll_create1(EPOLL_CLOEXEC);
+ 
+   /* epoll_create1() can fail either because it's not implemented (old kernel)
+@@ -96,6 +131,7 @@
+     if (fd != -1)
+       uv__cloexec(fd, 1);
+   }
++#endif
+ 
+   loop->backend_fd = fd;
+   loop->inotify_fd = -1;
+@@ -276,11 +312,18 @@
+     if (sizeof(int32_t) == sizeof(long) && timeout >= max_safe_timeout)
+       timeout = max_safe_timeout;
+ 
++#if defined(ANDROID) || defined(__ANDROID__)
++    nfds = epoll_wait(loop->backend_fd,
++                      events,
++                      ARRAY_SIZE(events),
++                      timeout);
++#else
+     nfds = epoll_pwait(loop->backend_fd,
+                        events,
+                        ARRAY_SIZE(events),
+                        timeout,
+                        psigset);
++#endif
+ 
+     /* Update loop->time unconditionally. It's tempting to skip the update when
+      * timeout == 0 (i.e. non-blocking poll) but there is no guarantee that the
