@@ -1,0 +1,23 @@
+diff -ruNa libevent-release-2.1.8-stable-old/CMakeLists.txt libevent-release-2.1.8-stable-new/CMakeLists.txt
+--- libevent-release-2.1.8-stable-old/CMakeLists.txt	2017-01-26 07:37:15.000000000 +0800
++++ libevent-release-2.1.8-stable-new/CMakeLists.txt	2019-05-17 18:05:36.354462265 +0800
+@@ -328,8 +328,8 @@
+ CHECK_FUNCTION_EXISTS_EX(vasprintf EVENT__HAVE_VASPRINTF)
+ CHECK_FUNCTION_EXISTS_EX(sysctl EVENT__HAVE_SYSCTL)
+ CHECK_FUNCTION_EXISTS_EX(accept4 EVENT__HAVE_ACCEPT4)
+-CHECK_FUNCTION_EXISTS_EX(arc4random EVENT__HAVE_ARC4RANDOM)
+-CHECK_FUNCTION_EXISTS_EX(arc4random_buf EVENT__HAVE_ARC4RANDOM_BUF)
++#CHECK_FUNCTION_EXISTS_EX(arc4random EVENT__HAVE_ARC4RANDOM)
++#CHECK_FUNCTION_EXISTS_EX(arc4random_buf EVENT__HAVE_ARC4RANDOM_BUF)
+ CHECK_FUNCTION_EXISTS_EX(epoll_create1 EVENT__HAVE_EPOLL_CREATE1)
+ CHECK_FUNCTION_EXISTS_EX(getegid EVENT__HAVE_GETEGID)
+ CHECK_FUNCTION_EXISTS_EX(geteuid EVENT__HAVE_GETEUID)
+@@ -492,7 +492,7 @@
+ #CHECK_FILE_OFFSET_BITS()
+ #set(EVENT___FILE_OFFSET_BITS _FILE_OFFSET_BITS)
+ 
+-include(CheckWaitpidSupportWNOWAIT)
++#include(CheckWaitpidSupportWNOWAIT)
+ 
+ # Verify kqueue works with pipes.
+ if (EVENT__HAVE_KQUEUE)
