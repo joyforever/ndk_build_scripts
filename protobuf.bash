@@ -42,6 +42,7 @@ function build() {
         -DANDROID_NATIVE_API_LEVEL=$API \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=. \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -GNinja
     cmake --build . --config Release
     ninja install
@@ -54,8 +55,8 @@ function build() {
 
 
 build 21 "arm64-v8a"
-#build 16 "armeabi"
-#build 16 "armeabi-v7a"
-#build 16 "x86_64"
-#build 16 "x86"
+build 16 "armeabi"
+build 16 "armeabi-v7a"
+build 16 "x86_64"
+build 16 "x86"
 
