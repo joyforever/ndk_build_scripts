@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-if [[ "$NDK_ROOT" = "" ]]; then
-    echo "NDK_ROOT not defined."
+if [[ "$NDK_HOME" = "" ]]; then
+    echo "NDK_HOME not defined."
     exit 1
 fi
 
@@ -34,10 +34,10 @@ function build() {
     pushd $BUILD_DIR
     cmake .. \
         -DANDROID_ABI=$ABI \
-	    -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake \
-	    -DANDROID_NATIVE_API_LEVEL=$API \
+        -DCMAKE_TOOLCHAIN_FILE=${NDK_HOME}/build/cmake/android.toolchain.cmake \
+        -DANDROID_NATIVE_API_LEVEL=$API \
         -DCMAKE_BUILD_TYPE=Release \
-	    -GNinja
+        -GNinja
     cmake --build . --config Release
     popd
 
@@ -49,7 +49,6 @@ function build() {
 build 21 "arm64-v8a"
 
 patch -p1 < "$ROOT/libuv-android-16.patch"
-build 16 "armeabi"
 build 16 "armeabi-v7a"
 build 16 "x86_64"
 build 16 "x86"

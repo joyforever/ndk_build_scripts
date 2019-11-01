@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-if [[ "$NDK_ROOT" = "" ]]; then
-    echo "NDK_ROOT not defined."
+if [[ "$NDK_HOME" = "" ]]; then
+    echo "NDK_HOME not defined."
     exit 1
 fi
 
@@ -11,9 +11,9 @@ ROOT=`pwd`
 
 
 mkdir -p $ROOT/build
-rm -rf $ROOT/build/libevent-release-2.1.8-stable
-tar -xf libevent-release-2.1.8-stable.tar.gz -C $ROOT/build/
-cd $ROOT/build/libevent-release-2.1.8-stable
+rm -rf $ROOT/build/libevent-2.1.11-stable
+tar -xf libevent-2.1.11-stable.tar.gz -C $ROOT/build/
+cd $ROOT/build/libevent-2.1.11-stable
 
 
 function build() {
@@ -26,9 +26,10 @@ function build() {
     pushd $BUILD_DIR
     cmake .. \
         -DANDROID_ABI=$ABI \
-        -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake \
+        -DCMAKE_TOOLCHAIN_FILE=${NDK_HOME}/build/cmake/android.toolchain.cmake \
         -DANDROID_NATIVE_API_LEVEL=$API \
         -DCMAKE_BUILD_TYPE=Release \
+        -DEVENT__LIBRARY_TYPE=STATIC \
         -DEVENT__DISABLE_OPENSSL=ON \
         -DEVENT__DISABLE_BENCHMARK=ON \
         -DEVENT__DISABLE_TESTS=ON \
@@ -43,22 +44,9 @@ function build() {
 }
 
 
-patch -p1 < "$ROOT/libevent.patch"
 build 21 "arm64-v8a"
 build 16 "armeabi"
 build 16 "armeabi-v7a"
 build 16 "x86_64"
 build 16 "x86"
-
-# 编译过程中可能会出现stdlib.h中的符号冲突，先手动将符号注释，待编译完成后手动恢复即可
-#
-# android-ndk-r19c/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/stdlib.h
-#128 //uint32_t arc4random(void);
-#129 //uint32_t arc4random_uniform(uint32_t __upper_bound);
-#130 //void arc4random_buf(void* __buf, size_t __n);
-#
-# android-ndk-r16b/sysroot/usr/include/stdlib.h
-#122 //uint32_t arc4random(void);
-#123 //uint32_t arc4random_uniform(uint32_t __upper_bound);
-#124 //void arc4random_buf(void* __buf, size_t __n);
 

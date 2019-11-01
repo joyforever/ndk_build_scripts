@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-if [[ "$NDK_ROOT" = "" ]]; then
-    echo "NDK_ROOT not defined."
+if [[ "$NDK_HOME" = "" ]]; then
+    echo "NDK_HOME not defined."
     exit 1
 fi
 
@@ -43,7 +43,7 @@ function build() {
         -DBUILD_SHARED_LIBS=OFF \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake \
+        -DCMAKE_TOOLCHAIN_FILE=${NDK_HOME}/build/cmake/android.toolchain.cmake \
         -DANDROID_NATIVE_API_LEVEL=$API \
         -GNinja
     cmake --build . --config Release
