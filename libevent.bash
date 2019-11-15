@@ -53,7 +53,7 @@ build 16 "x86"
 mkdir -p $ROOT/include
 mkdir -p $ROOT/lib
 mkdir -p $ROOT/lib/arm64-v8a
-mkdir -p $ROOT/lib/armeabi-v8a
+mkdir -p $ROOT/lib/armeabi-v7a
 mkdir -p $ROOT/lib/x86_64
 mkdir -p $ROOT/lib/x86
 
