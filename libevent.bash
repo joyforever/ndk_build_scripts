@@ -45,8 +45,22 @@ function build() {
 
 
 build 21 "arm64-v8a"
-build 16 "armeabi"
 build 16 "armeabi-v7a"
 build 16 "x86_64"
 build 16 "x86"
 
+
+mkdir -p $ROOT/include
+mkdir -p $ROOT/lib
+mkdir -p $ROOT/lib/arm64-v8a
+mkdir -p $ROOT/lib/armeabi-v8a
+mkdir -p $ROOT/lib/x86_64
+mkdir -p $ROOT/lib/x86
+
+cp -vrf $ROOT/output/arm64-v8a/include/event2   $ROOT/include/
+cp -vrf $ROOT/output/arm64-v8a/lib/libevent.a   $ROOT/lib/arm64-v8a/
+cp -vrf $ROOT/output/armeabi-v7a/lib/libevent.a $ROOT/lib/armeabi-v7a/
+cp -vrf $ROOT/output/x86_64/lib/libevent.a      $ROOT/lib/x86_64/
+cp -vrf $ROOT/output/x86/lib/libevent.a         $ROOT/lib/x86/
+
+rm -rf $ROOT/output/

@@ -48,7 +48,6 @@ function build() {
 
 
 build 21 "arm64-v8a"
-build 16 "armeabi"
 build 16 "armeabi-v7a"
 build 16 "x86_64"
 build 16 "x86"
